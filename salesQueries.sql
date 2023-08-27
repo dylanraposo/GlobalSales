@@ -165,34 +165,3 @@ DROP TABLE IF EXISTS #rfm
 
 
 
-
-
-
-
-),
-rfm_calc as
-(
-
-	SELECT r.*,
-		NTILE(4) OVER (order by Recency desc) rfm_recency,
-		NTILE(4) OVER (order by Frequency) rfm_frequency,
-		NTILE(4) OVER (order by MonetaryValue) rfm_monetary
-	FROM rfm r
-)
-SELECT 
-	c.*, rfm_recency+ rfm_frequency+ rfm_monetary as rfm_cell,
-	CAST(rfm_recency AS VARCHAR) + CAST(rfm_frequency AS VARCHAR) + cast(rfm_monetary  AS VARCHAR)rfm_cell_string
-INTO #rfm
-FROM rfm_calc c
-SELECT CustomerName , rfm_recency, rfm_frequency, rfm_monetary,
-	CASE 
-		WHEN rfm_cell_string in (111, 112 , 121, 122, 123, 132, 211, 212, 114, 141) THEN 'lost_customers'  --lost customers
-		WHEN rfm_cell_string in (133, 134, 143, 244, 334, 343, 344, 144) THEN 'slipping away, cannot lose' -- (Big spenders who haven’t purchased lately) slipping away
-		WHEN rfm_cell_string in (311, 411, 331) THEN 'new customers'
-		WHEN rfm_cell_string in (222, 223, 233, 322) THEN 'potential churners'
-		WHEN rfm_cell_string in (323, 333,321, 422, 332, 432) THEN 'active' --(Customers who buy often & recently, but at low price points)
-		WHEN rfm_cell_string in (433, 434, 443, 444) THEN 'loyal'
-	END rfm_segment
-
-FROM #rfm
-
