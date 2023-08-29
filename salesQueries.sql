@@ -145,23 +145,4 @@ SELECT DISTINCT OrderNumber, STUFF(
 		ORDER BY ProductCodes DESC;
 
 
--- Who is best customer (can be answered with RFM)
-DROP TABLE IF EXISTS #rfm
-;with rfm as 
-(
-
-
-	SELECT 
-		CustomerName, 
-		SUM(sales) AS "Monetary Total",
-		AVG(sales) AS "Average Monetary Value",
-		COUNT(OrderDate) AS Frequency,
-		MAX(OrderDate) AS "First Order Date",
-		(SELECT MAX(OrderDate) FROM dbo.sales) AS "Recent Order Date",
-		DATEDIFF(DD, MAX(OrderDate), (SELECT MAX(ORDERDATE) FROM dbo.sales)) AS "Recency"
-	FROM SALES.dbo.sales
-	GROUP BY CustomerName
-	ORDER BY [Monetary Total] DESC
-
-
 
